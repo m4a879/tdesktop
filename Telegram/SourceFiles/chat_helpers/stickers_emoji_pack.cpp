@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "chat_helpers/stickers_emoji_pack.h"
 
 #include "chat_helpers/stickers_emoji_image_loader.h"
+#include "chat_helpers/lottie_safety.h"
 #include "history/view/history_view_element.h"
 #include "history/history_item.h"
 #include "history/history.h"
@@ -315,7 +316,7 @@ std::unique_ptr<Lottie::SinglePlayer> EmojiPack::effectPlayer(
 			count,
 			get,
 			put,
-			Lottie::ReadContent(data, filepath),
+			LottieSafety::CheckedContent(data, filepath),
 			request,
 			Lottie::Quality::High);
 		weakProvider = result;

@@ -18,6 +18,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "core/mime_type.h"
 #include "base/unixtime.h"
 #include "base/random.h"
+#include "chat_helpers/lottie_safety.h"
 #include "editor/scene/scene_item_sticker.h"
 #include "editor/scene/scene.h"
 #include "editor/video/video_editor_common.h"
@@ -663,7 +664,7 @@ bool FileLoadTask::CheckForImage(
 	auto read = [&] {
 		if (filepath.endsWith(u".tgs"_q, Qt::CaseInsensitive)) {
 			auto image = Lottie::ReadThumbnail(
-				Lottie::ReadContent(content, filepath));
+				LottieSafety::CheckedContent(content, filepath));
 			const auto success = !image.isNull();
 			if (success) {
 				result->filemime = u"application/x-tgsticker"_q;

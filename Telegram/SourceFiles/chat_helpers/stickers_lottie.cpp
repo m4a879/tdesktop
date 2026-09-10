@@ -7,6 +7,8 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "chat_helpers/stickers_lottie.h"
 
+#include "base/flat_set.h"
+#include "chat_helpers/lottie_safety.h"
 #include "lottie/lottie_single_player.h"
 #include "lottie/lottie_multi_player.h"
 #include "data/stickers/data_stickers_set.h"
@@ -30,6 +32,11 @@ namespace ChatHelpers {
 namespace {
 
 constexpr auto kDontCacheLottieAfterArea = 512 * 512;
+
+base::flat_set<DocumentId> &BannedLottieDocuments() {
+	static auto result = base::flat_set<DocumentId>();
+	return result;
+}
 
 [[nodiscard]] uint64 LocalStickerId(QStringView name) {
 	auto full = u"local_sticker:"_q;
@@ -82,11 +89,25 @@ auto LottieFromDocument(
 	const auto document = media->owner();
 	const auto data = media->bytes();
 	const auto filepath = document->filepath();
+	const auto content = Lottie::ReadContent(data, filepath);
+	const auto check = LottieSafety::CheckContent(content);
+	const auto invalid = check.lottie && !check.valid;
+	if (invalid
+		&& BannedLottieDocuments().insert(document->id).second) {
+		LOG(("Lottie Safety: Rejected invalid animation %1."
+			).arg(document->id));
+		document->owner().cache().remove(document->goodThumbnailCacheKey());
+		if (const auto baseKey = document->bigFileBaseCacheKey()) {
+			document->owner().cacheBigFile().remove(
+				{ baseKey.high, baseKey.low + keyShift });
+		}
+	}
+	const auto safe = (invalid
+		|| BannedLottieDocuments().contains(document->id))
+		? QByteArray()
+		: content;
 	if (box.width() * box.height() > kDontCacheLottieAfterArea) {
-		// Don't use frame caching for large stickers.
-		return method(
-			Lottie::ReadContent(data, filepath),
-			Lottie::FrameRequest{ box });
+		return method(safe, Lottie::FrameRequest{ box });
 	}
 	if (const auto baseKey = document->bigFileBaseCacheKey()) {
 		return LottieCachedFromContent(
@@ -94,12 +115,10 @@ auto LottieFromDocument(
 			baseKey,
 			keyShift,
 			&document->session(),
-			Lottie::ReadContent(data, filepath),
+			safe,
 			box);
 	}
-	return method(
-		Lottie::ReadContent(data, filepath),
-		Lottie::FrameRequest{ box });
+	return method(safe, Lottie::FrameRequest{ box });
 }
 
 std::unique_ptr<Lottie::SinglePlayer> LottiePlayerFromDocument(
@@ -190,6 +209,11 @@ std::unique_ptr<Lottie::SinglePlayer> LottieThumbnail(
 		? thumb->content()
 		: Lottie::ReadContent(media->bytes(), media->owner()->filepath());
 	if (content.isEmpty()) {
+		return nullptr;
+	}
+	const auto check = LottieSafety::CheckContent(content);
+	if (check.lottie && !check.valid) {
+		LOG(("Lottie Safety: Rejected invalid thumbnail content."));
 		return nullptr;
 	}
 	const auto method = [](auto &&...args) {

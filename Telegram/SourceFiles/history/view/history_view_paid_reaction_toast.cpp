@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "calls/group/calls_group_call.h"
 #include "calls/group/calls_group_messages.h"
+#include "chat_helpers/lottie_safety.h"
 #include "chat_helpers/stickers_lottie.h"
 #include "data/data_document.h"
 #include "data/data_document_media.h"
@@ -405,7 +406,7 @@ void PaidReactionToast::setupLottiePreview(
 	const auto filepath = document->filepath();
 	const auto ratio = style::DevicePixelRatio();
 	const auto player = widget->lifetime().make_state<Lottie::SinglePlayer>(
-		Lottie::ReadContent(bytes, filepath),
+		LottieSafety::CheckedContent(bytes, filepath),
 		Lottie::FrameRequest{ QSize(size, size) * ratio },
 		Lottie::Quality::Default);
 

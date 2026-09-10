@@ -7,6 +7,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 */
 #include "data/data_document_media.h"
 
+#include "chat_helpers/lottie_safety.h"
 #include "data/data_document.h"
 #include "data/data_document_resolver.h"
 #include "data/data_session.h"
@@ -70,7 +71,8 @@ enum class FileType {
 		}
 		return result.thumbnail;
 	} else if (type == FileType::AnimatedSticker) {
-		return Lottie::ReadThumbnail(Lottie::ReadContent(data, path));
+		return Lottie::ReadThumbnail(
+			LottieSafety::CheckedContent(data, path));
 	} else if (type == FileType::Theme) {
 		return Window::Theme::GeneratePreview(data, path);
 	} else if (type == FileType::WallPatternSVG) {
@@ -558,7 +560,9 @@ auto DocumentIconFrameGenerator(not_null<DocumentMedia*> media)
 		return nullptr;
 	}
 	return [=]() -> std::unique_ptr<Ui::FrameGenerator> {
-		const auto bytes = Lottie::ReadContent(content, location.name());
+		const auto bytes = LottieSafety::CheckedContent(
+			content,
+			location.name());
 		if (fromFile) {
 			location.accessDisable();
 		}

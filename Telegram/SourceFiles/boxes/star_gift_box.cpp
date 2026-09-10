@@ -32,6 +32,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "boxes/transfer_gift_box.h"
 #include "chat_helpers/compose/compose_show.h"
 #include "chat_helpers/emoji_suggestions_widget.h"
+#include "chat_helpers/lottie_safety.h"
 #include "chat_helpers/message_field.h"
 #include "chat_helpers/stickers_gift_box_pack.h"
 #include "chat_helpers/stickers_lottie.h"
@@ -738,7 +739,7 @@ void ShowSentToast(
 	const auto filepath = document->filepath();
 	const auto ratio = style::DevicePixelRatio();
 	const auto player = preview->lifetime().make_state<Lottie::SinglePlayer>(
-		Lottie::ReadContent(bytes, filepath),
+		LottieSafety::CheckedContent(bytes, filepath),
 		Lottie::FrameRequest{ QSize(size, size) * ratio },
 		Lottie::Quality::Default);
 

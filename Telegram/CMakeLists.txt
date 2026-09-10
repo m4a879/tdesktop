@@ -518,6 +518,8 @@ PRIVATE
     chat_helpers/field_autocomplete.h
     chat_helpers/gifs_list_widget.cpp
     chat_helpers/gifs_list_widget.h
+    chat_helpers/lottie_safety.cpp
+    chat_helpers/lottie_safety.h
     chat_helpers/message_field.cpp
     chat_helpers/message_field.h
     chat_helpers/rich_paste_toast.cpp

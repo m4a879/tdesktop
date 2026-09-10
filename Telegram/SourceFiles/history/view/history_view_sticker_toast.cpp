@@ -10,6 +10,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "ui/toast/toast.h"
 #include "ui/toast/toast_widget.h"
 #include "ui/widgets/buttons.h"
+#include "chat_helpers/lottie_safety.h"
 #include "data/stickers/data_custom_emoji.h"
 #include "data/data_document.h"
 #include "data/data_document_media.h"
@@ -330,7 +331,7 @@ void StickerToast::setupLottiePreview(not_null<Ui::RpWidget*> widget, int size) 
 	const auto filepath = _for->filepath();
 	const auto ratio = style::DevicePixelRatio();
 	const auto player = widget->lifetime().make_state<Lottie::SinglePlayer>(
-		Lottie::ReadContent(bytes, filepath),
+		LottieSafety::CheckedContent(bytes, filepath),
 		Lottie::FrameRequest{ QSize(size, size) * ratio },
 		Lottie::Quality::Default);
 

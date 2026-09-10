@@ -8,6 +8,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 #include "data/stickers/data_custom_emoji.h"
 
 #include "boxes/peers/edit_forum_topic_box.h" // MakeTopicIconEmoji.
+#include "chat_helpers/lottie_safety.h"
 #include "chat_helpers/stickers_emoji_pack.h"
 #include "main/main_app_config.h"
 #include "main/main_session.h"
@@ -390,7 +391,7 @@ void CustomEmojiLoader::check() {
 		}
 	};
 	const auto type = document->sticker()->type;
-	auto generator = [=, bytes = Lottie::ReadContent(data, filepath)]()
+	auto generator = [=, bytes = LottieSafety::CheckedContent(data, filepath)]()
 	-> std::unique_ptr<Ui::FrameGenerator> {
 		switch (type) {
 		case StickerType::Tgs:

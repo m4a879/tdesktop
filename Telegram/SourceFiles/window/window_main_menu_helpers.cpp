@@ -9,6 +9,7 @@ https://github.com/telegramdesktop/tdesktop/blob/master/LEGAL
 
 #include "apiwrap.h"
 #include "base/platform/base_platform_info.h"
+#include "chat_helpers/lottie_safety.h"
 #include "data/data_channel.h"
 #include "data/data_chat.h"
 #include "data/data_document.h"
@@ -107,8 +108,12 @@ not_null<Ui::SettingsButton*> AddMyChannelsBox(
 				if (view->bytes().isEmpty()) {
 					return true;
 				}
+				auto json = Images::UnpackGzip(view->bytes());
+				if (!LottieSafety::ValidJson(json)) {
+					return false;
+				}
 				auto owned = Lottie::MakeIcon({
-					.json = Images::UnpackGzip(view->bytes()),
+					.json = std::move(json),
 					.sizeOverride = Size(st::maxStickerSize),
 				});
 				const auto icon = owned.get();
